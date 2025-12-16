@@ -40,13 +40,14 @@ async function main() {
         const connectUrl = dbUrl.includes('retryWrites') ? dbUrl : dbUrl + (dbUrl.includes('?') ? '&' : '?') + 'retryWrites=true&w=majority';
         
         await mongoose.connect(connectUrl, {
-            serverSelectionTimeoutMS: 30000,
-            socketTimeoutMS: 45000,
+            serverSelectionTimeoutMS: 60000, // Increase to 60 seconds
+            socketTimeoutMS: 60000,
+            connectTimeoutMS: 30000,
         });
         console.log("[Mongoose] Successfully connected!");
     } catch (err) {
         console.error("[Mongoose] Connection failed:", err.message);
-        console.error("[Mongoose] Error code:", err.code);
+        console.error("[Mongoose] Ensure your IP is whitelisted in MongoDB Atlas!");
         throw err;
     }
 }
