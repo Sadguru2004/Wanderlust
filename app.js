@@ -25,14 +25,30 @@ const dbUrl = process.env.ATLASDB_URL;
 
 main()
 .then(()=> {
-    console.log("connected to DB");
+    console.log("✓ Connected to DB successfully!");
 })
 .catch((err) => {
-    console.log(err);
+    console.error("✗ Failed to connect to DB:");
+    console.error(err);
+    process.exit(1);
 });
 
 async function main() {
-    await mongoose.connect(dbUrl);
+    console.log("[Mongoose] Attempting to connect to Atlas...");
+    try {
+        // Ensure retryWrites and w=majority are set for proper connection
+        const connectUrl = dbUrl.includes('retryWrites') ? dbUrl : dbUrl + (dbUrl.includes('?') ? '&' : '?') + 'retryWrites=true&w=majority';
+        
+        await mongoose.connect(connectUrl, {
+            serverSelectionTimeoutMS: 30000,
+            socketTimeoutMS: 45000,
+        });
+        console.log("[Mongoose] Successfully connected!");
+    } catch (err) {
+        console.error("[Mongoose] Connection failed:", err.message);
+        console.error("[Mongoose] Error code:", err.code);
+        throw err;
+    }
 }
 
 app.set("view engine","ejs");
@@ -50,13 +66,13 @@ const store = MongoStore.create({
     touchAfter: 24 * 3600, // time period in seconds
 });
 
-store.on("error", () =>{
-    console.log("ERROR in MONGO SESSION STORE", e);
+store.on("error", (err) => {
+    console.error("ERROR in MONGO SESSION STORE", err);
 });
 
 const sessionOptions = {
     store,
-    secret: "process.env.SECRET",
+    secret: process.env.SECRET || "mysupersecretcode",
     resave: false,
     saveUninitialized: true,
     cookie: {
@@ -111,5 +127,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(8080,() => {
-   console.log("listening on port 8080");
+   console.log("✓ Server listening on port 8080");
 });
