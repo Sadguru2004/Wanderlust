@@ -95,9 +95,10 @@ const sessionOptions = {
   },
 };
 
-// app.get("/",(req, res)=>{
-//     res.send("I am root");
-// });
+app.get("/", (req, res) => {
+  res.redirect("/listings");
+});
+
 app.set("trust proxy", 1);
 
 app.use(session(sessionOptions));
