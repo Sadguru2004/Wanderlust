@@ -24,6 +24,10 @@ const PORT = process.env.PORT || 8080;
 
 //const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 const dbUrl = process.env.ATLASDB_URL;
+if (!dbUrl) {
+  console.error("✗ ATLASDB_URL is not defined in environment variables");
+  process.exit(1);
+}
 
 main()
   .then(() => {
@@ -81,12 +85,13 @@ const sessionOptions = {
   store,
   secret: process.env.SECRET || "mysupersecretcode",
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   cookie: {
     expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
     maxAge: 7 * 24 * 60 * 60 * 1000,
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
   },
 };
 
